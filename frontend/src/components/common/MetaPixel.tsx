@@ -16,14 +16,21 @@ const MetaPixel = ({ pixelId }: MetaPixelProps) => {
       console.log(`[MetaPixel] Initializing with Pixel ID: ${id}`)
       const w = window as any
       if (!w.fbq) {
-        w.fbq = function(...args: any[]) {
-          w.fbq.callMethod ? w.fbq.callMethod.apply(w.fbq, args) : w.fbq.queue.push(args)
+        const n = w.fbq = function(this: any, ...args: any[]) {
+          n.callMethod ? n.callMethod.apply(n, args) : n.queue.push(args)
         }
-        if (!w._fbq) w._fbq = w.fbq
-        w.fbq.push = w.fbq
-        w.fbq.loaded = true
-        w.fbq.version = '2.0'
-        w.fbq.queue = []
+        if (!w._fbq) w._fbq = n
+        n.push = n
+        n.loaded = true
+        n.version = '2.0'
+        n.queue = []
+        const script = document.createElement('script')
+        script.async = true
+        script.src = 'https://connect.facebook.net/en_US/fbevents.js'
+        const firstScript = document.getElementsByTagName('script')[0]
+        if (firstScript?.parentNode) {
+          firstScript.parentNode.insertBefore(script, firstScript)
+        }
       }
       w.fbq('init', id)
       w.fbq('track', 'PageView')
