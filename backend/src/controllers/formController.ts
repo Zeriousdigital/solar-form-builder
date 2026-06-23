@@ -77,7 +77,7 @@ export const updateForm = async (req: Request, res: Response, next: NextFunction
         isPublished: isPublished !== undefined ? isPublished : existing.isPublished
       }
     })
-    res.json({ success: true, data: { ...form, schema: JSON.parse(form.schema) } })
+    res.json({ success: true, data: form })
   } catch (error) {
     next(error)
   }
