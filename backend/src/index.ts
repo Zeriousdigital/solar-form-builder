@@ -8,7 +8,8 @@ import metaRoutes from './routes/meta'
 import settingsRoutes from './routes/settings'
 import corsMiddleware from './middleware/cors'
 import { errorHandler } from './middleware/errorHandler'
-import { seedDefaultSettings } from './services/settingsService'
+import { seedDefaultSettings, getSettings } from './services/settingsService'
+import prisma from './prisma/client'
 
 dotenv.config()
 
@@ -25,14 +26,32 @@ if (isProduction) {
   app.use(express.static(path.join(__dirname, '../public')))
 }
 
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', async (_req, res) => {
+  let dbConnected = false
+  let dbError: string | null = null
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    dbConnected = true
+  } catch (e: any) {
+    dbError = e.message
+  }
+  let capiPixelId = false
+  let capiAccessToken = false
+  try {
+    const settings = await getSettings()
+    capiPixelId = !!settings.meta_pixel_id
+    capiAccessToken = !!settings.meta_access_token
+  } catch {}
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     uptime: process.uptime(),
     dbConfigured: !!process.env.DATABASE_URL,
-    dbUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 20) + '...' : 'not set'
+    dbConnected,
+    dbError,
+    capiConfigured: capiPixelId && capiAccessToken,
+    capi: { hasPixelId: capiPixelId, hasAccessToken: capiAccessToken }
   })
 })
 
