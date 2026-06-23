@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button, Input, message, Spin, DatePicker, Checkbox, Select } from 'antd'
 import { formsApi } from '../../services/api'
 import { submissionsApi } from '../../services/api'
-import { parseFormSchema, calculateQualifyingScore, getProgressPercent } from '../../utils/helpers'
+import { parseFormSchema, calculateQualifyingScore, getProgressPercent, buildWhatsAppMessage } from '../../utils/helpers'
 import { fbq } from '../../services/meta'
 import MetaPixel from '../common/MetaPixel'
 import type { FormField } from '../../types'
@@ -302,7 +302,7 @@ const FormRenderer = () => {
     if (phase === 'submitted') {
       const waNumber = form.settings?.whatsappNumber || '2348012345678'
       const waMessage = encodeURIComponent(
-        form.settings?.whatsappMessage || 'Hi! I just completed the solar assessment form and would like more information.'
+        buildWhatsAppMessage(form.fields, answers, contactInfo)
       )
       return (
         <div className="form-container items-center justify-center text-center">

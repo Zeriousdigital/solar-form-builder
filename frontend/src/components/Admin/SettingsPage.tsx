@@ -1,27 +1,49 @@
-import { useState, useEffect } from 'react'
-import { Card, Input, Button, message, Spin } from 'antd'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Card, Input, Button, message, Spin, Tag } from 'antd'
 import { SaveOutlined } from '@ant-design/icons'
 import { settingsApi } from '../../services/api'
 
 const SettingsPage = () => {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [dirty, setDirty] = useState(false)
   const [pixelId, setPixelId] = useState('')
   const [accessToken, setAccessToken] = useState('')
   const [testCode, setTestCode] = useState('')
+  const initialRef = useRef({ pixelId: '', accessToken: '', testCode: '' })
 
   useEffect(() => {
     fetchSettings()
   }, [])
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (dirty) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [dirty])
+
+  const markDirty = useCallback(() => {
+    if (!dirty) setDirty(true)
+  }, [dirty])
 
   const fetchSettings = async () => {
     try {
       setLoading(true)
       const res = await settingsApi.getAll()
       const data = res.data.data || {}
-      setPixelId(data.meta_pixel_id || '')
-      setAccessToken(data.meta_access_token || '')
-      setTestCode(data.meta_test_event_code || '')
+      const p = data.meta_pixel_id || ''
+      const a = data.meta_access_token || ''
+      const t = data.meta_test_event_code || ''
+      setPixelId(p)
+      setAccessToken(a)
+      setTestCode(t)
+      initialRef.current = { pixelId: p, accessToken: a, testCode: t }
+      setDirty(false)
     } catch (e) {
       message.error('Failed to load settings')
     } finally {
@@ -37,6 +59,8 @@ const SettingsPage = () => {
         meta_access_token: accessToken,
         meta_test_event_code: testCode
       })
+      initialRef.current = { pixelId, accessToken, testCode }
+      setDirty(false)
       message.success('Meta settings saved')
     } catch (e) {
       message.error('Failed to save settings')
@@ -56,7 +80,7 @@ const SettingsPage = () => {
             <label className="block text-sm font-medium mb-1">Meta Pixel ID</label>
             <Input
               value={pixelId}
-              onChange={(e) => setPixelId(e.target.value)}
+              onChange={(e) => { setPixelId(e.target.value); markDirty() }}
               placeholder="1234567890"
             />
             <p className="text-xs text-gray-400 mt-1">
@@ -67,7 +91,7 @@ const SettingsPage = () => {
             <label className="block text-sm font-medium mb-1">Conversions API Access Token</label>
             <Input.Password
               value={accessToken}
-              onChange={(e) => setAccessToken(e.target.value)}
+              onChange={(e) => { setAccessToken(e.target.value); markDirty() }}
               placeholder="EAAB...927Z"
             />
             <p className="text-xs text-gray-400 mt-1">
@@ -78,21 +102,24 @@ const SettingsPage = () => {
             <label className="block text-sm font-medium mb-1">Test Event Code (optional)</label>
             <Input
               value={testCode}
-              onChange={(e) => setTestCode(e.target.value)}
+              onChange={(e) => { setTestCode(e.target.value); markDirty() }}
               placeholder="TEST12345"
             />
             <p className="text-xs text-gray-400 mt-1">
               Used for testing in Meta Events Manager without recording real events
             </p>
           </div>
-          <Button
-            type="primary"
-            icon={<SaveOutlined />}
-            onClick={handleSave}
-            loading={saving}
-          >
-            Save Settings
-          </Button>
+          <div className="flex items-center gap-3">
+            {dirty && <Tag color="orange">Unsaved changes</Tag>}
+            <Button
+              type="primary"
+              icon={<SaveOutlined />}
+              onClick={handleSave}
+              loading={saving}
+            >
+              Save Settings
+            </Button>
+          </div>
         </div>
       </Card>
       <Card className="mt-4">
