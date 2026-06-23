@@ -103,27 +103,32 @@ export const buildWhatsAppMessage = (
     const answer = answers[field.id]
     if (answer === undefined || answer === null || answer === '') return
 
-    const label = field.label.trim()
+    const label = field.label.trim().replace(/\?$/, '')
     const val = Array.isArray(answer) ? answer.join(', ') : String(answer)
+    const lowerLabel = label.toLowerCase()
+    const isYes = /^y(es)?$/i.test(val) || val.toLowerCase() === 'true'
+    const isNo = /^n(o)?$/i.test(val) || val.toLowerCase() === 'false'
 
-    const lower = label.toLowerCase()
-    if (lower.startsWith('do you') || lower.startsWith('does your') || lower.startsWith('are you') || lower.startsWith('is your')) {
-      const rest = label.replace(/^(do you|does your|are you|is your)\s+/i, '').trim()
-      if (val.toLowerCase() === 'yes' || val.toLowerCase() === 'true') {
-        parts.push(`I do ${rest}`)
-      } else if (val.toLowerCase() === 'no' || val.toLowerCase() === 'false') {
-        parts.push(`I don't ${rest}`)
-      } else {
-        parts.push(`${label} - ${val}`)
-      }
+    if (lowerLabel.startsWith('do you')) {
+      const rest = label.replace(/^do you\s+/i, '').replace(/\byour\b/gi, 'my')
+      parts.push(isYes ? `Yes, I ${rest}` : `No, I don't ${rest}`)
+    } else if (lowerLabel.startsWith('does your')) {
+      const fieldPart = label.replace(/^does your\s+/i, '').replace(/\byour\b/gi, 'my')
+      parts.push(isYes ? `Yes, my ${fieldPart}` : `No, my ${fieldPart} does not`)
+    } else if (lowerLabel.startsWith('are you')) {
+      const rest = label.replace(/^are you\s+/i, '').replace(/\byour\b/gi, 'my')
+      parts.push(isYes ? `Yes, I am ${rest}` : `No, I am not ${rest}`)
+    } else if (lowerLabel.startsWith('is your')) {
+      const rest = label.replace(/^is your\s+/i, '').replace(/\byour\b/gi, 'my')
+      parts.push(isYes ? `Yes, my ${rest}` : `No, my ${rest} is not`)
     } else {
-      parts.push(`My ${label.toLowerCase()} is ${val}`)
+      parts.push(`${label}: ${val}`)
     }
   })
 
   if (contact.name) parts.push(`My name is ${contact.name}`)
-  if (contact.email) parts.push(`my email is ${contact.email}`)
-  if (contact.phone) parts.push(`and my phone is ${contact.phone}`)
+  if (contact.email) parts.push(`My email is ${contact.email}`)
+  if (contact.phone) parts.push(`My phone is ${contact.phone}`)
 
-  return parts.join(', ').replace(/,([^,]*and[^,]*)$/, ' $1')
+  return parts.join('. ')
 }
