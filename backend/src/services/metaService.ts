@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { hashEmail, hashPhone } from '../utils/crypto'
+import { sha256Hash as sha256 } from '../utils/crypto'
 import { getSettings } from './settingsService'
 
 const CAPI_URL = 'https://graph.facebook.com/v20.0'
@@ -9,6 +9,7 @@ export interface CAPIOptions {
   userData: {
     email?: string
     phone?: string
+    name?: string
   }
   customData?: Record<string, any>
   eventSourceUrl?: string
@@ -30,10 +31,19 @@ export const sendToCAPI = async (options: CAPIOptions): Promise<any> => {
 
   const userDataPayload: Record<string, string[]> = {}
   if (userData.email) {
-    userDataPayload.em = [hashEmail(userData.email)]
+    userDataPayload.em = [sha256(userData.email)]
   }
   if (userData.phone) {
-    userDataPayload.ph = [hashPhone(userData.phone)]
+    userDataPayload.ph = [sha256(userData.phone.replace(/[^0-9]/g, ''))]
+  }
+  if (userData.name) {
+    const parts = userData.name.trim().split(/\s+/)
+    if (parts.length >= 2) {
+      userDataPayload.fn = [sha256(parts[0])]
+      userDataPayload.ln = [sha256(parts.slice(1).join(' '))]
+    } else {
+      userDataPayload.fn = [sha256(parts[0])]
+    }
   }
 
   const event = {

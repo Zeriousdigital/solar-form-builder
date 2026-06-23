@@ -37,14 +37,15 @@ export const createSubmission = async (req: Request, res: Response, next: NextFu
     })
 
     const contactInfo = extractContactInfo(sanitizedData)
-    if (contactInfo.email || contactInfo.phone) {
+    if (    contactInfo.email || contactInfo.phone || contactInfo.name) {
       const formSchema = form.schema as any
       const formPixelId = formSchema?.settings?.metaPixelId || undefined
-      sendToCAPI({
+      const capiData: any = {
         eventName: 'Lead',
         userData: {
           email: contactInfo.email,
-          phone: contactInfo.phone
+          phone: contactInfo.phone,
+          name: contactInfo.name
         },
         customData: {
           form_name: form.name,
@@ -54,9 +55,18 @@ export const createSubmission = async (req: Request, res: Response, next: NextFu
         },
         eventSourceUrl: req.headers.referer as string || undefined,
         pixelId: formPixelId
-      }).catch((err: Error) => {
-        console.warn('CAPI event failed (non-blocking):', err.message)
+      }
+      sendToCAPI(capiData).catch((err: Error) => {
+        console.warn('CAPI Lead event failed (non-blocking):', err.message)
       })
+      if (isQualified) {
+        sendToCAPI({
+          ...capiData,
+          eventName: 'QualifiedLead'
+        }).catch((err: Error) => {
+          console.warn('CAPI QualifiedLead event failed (non-blocking):', err.message)
+        })
+      }
     }
 
     res.status(201).json({ success: true, data: submission })

@@ -13,7 +13,7 @@ export const sendMetaEvent = async (req: Request, res: Response, next: NextFunct
       return
     }
 
-    const validEvents = ['Lead', 'PageView', 'CompleteRegistration', 'Subscribe', 'StartTrial']
+    const validEvents = ['Lead', 'PageView', 'CompleteRegistration', 'Subscribe', 'StartTrial', 'QualifiedLead', 'DisqualifiedLead']
     if (!validEvents.includes(eventName)) {
       res.status(400).json({
         success: false,

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button, Input, message, Spin, DatePicker, Checkbox, Select } from 'antd'
-import { formsApi } from '../../services/api'
+import api, { formsApi } from '../../services/api'
 import { submissionsApi } from '../../services/api'
 import { parseFormSchema, calculateQualifyingScore, getProgressPercent, buildWhatsAppMessage } from '../../utils/helpers'
 import { fbq } from '../../services/meta'
@@ -110,6 +110,11 @@ const FormRenderer = () => {
           }
         } else {
           fbq.trackCustom('DisqualifiedLead', { form_id: formId, score: result.score, total: result.total })
+          api.post('/meta/event', {
+            eventName: 'DisqualifiedLead',
+            userData: {},
+            customData: { form_id: formId, score: result.score, total: result.total }
+          }).catch(() => {})
           navigate(`/form/${formId}/thank-you?qualified=false`)
           return
         }
