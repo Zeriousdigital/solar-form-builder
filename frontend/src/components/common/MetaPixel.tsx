@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { settingsApi } from '../../services/api'
+import api, { settingsApi } from '../../services/api'
 
 interface MetaPixelProps {
   pixelId?: string
@@ -34,6 +34,11 @@ const MetaPixel = ({ pixelId }: MetaPixelProps) => {
       }
       w.fbq('init', id)
       w.fbq('track', 'PageView')
+      api.post('/meta/event', {
+        eventName: 'PageView',
+        userData: {},
+        customData: {}
+      }).catch(() => {})
     }
 
     if (pixelId) {
