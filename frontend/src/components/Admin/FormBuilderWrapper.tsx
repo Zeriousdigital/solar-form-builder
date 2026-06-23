@@ -400,7 +400,7 @@ const FormBuilderWrapper = () => {
                       }).map((field, index) => (
                         <div key={field.id} className={`p-3 bg-white rounded shadow-sm border-l-4 ${field.isQualifying ? 'border-l-green-500' : 'border-l-gray-300'}`}>
                           <p className="text-sm font-medium mb-1">
-                            {field.isQualifying && <Tag color="green" size="small">Qualifying</Tag>}
+                            {field.isQualifying && <Tag color="green">Qualifying</Tag>}
                             Q{index + 1}: {field.label}
                             {field.required && <span className="text-red-500 ml-1">*</span>}
                           </p>
@@ -504,7 +504,7 @@ const FormBuilderWrapper = () => {
                 <label className="block text-sm font-medium mb-1">Options (one per line)</label>
                 <Input.TextArea
                   rows={4}
-                  value={editingField.options.join('\n')}
+                  value={editingField.options?.join('\n') || ''}
                   onChange={(e) => {
                     const opts = e.target.value.split('\n').map(o => o.trim()).filter(o => o)
                     setEditingField({
@@ -550,7 +550,7 @@ const FormBuilderWrapper = () => {
                 </label>
                 {['multiple_choice', 'dropdown', 'checkbox'].includes(editingField.type) ? (
                   <div className="space-y-1">
-                    {editingField.options.map(opt => (
+                    {editingField.options?.map(opt => (
                       <div key={opt} className="flex items-center gap-2">
                         <Checkbox
                           checked={(editingField.correctAnswers || []).includes(opt)}
@@ -562,7 +562,7 @@ const FormBuilderWrapper = () => {
                         </Checkbox>
                       </div>
                     ))}
-                    {editingField.options.length === 0 && (
+                    {(!editingField.options || editingField.options.length === 0) && (
                       <p className="text-xs text-red-500">Add options first to mark correct answers</p>
                     )}
                   </div>

@@ -4,4 +4,3 @@ dist/
 *.db-journal
 .env
 .env.local
-public/
