@@ -140,7 +140,6 @@ const FormRenderer = () => {
         qualifyingScore: result.score,
         qualifyingTotal: result.total
       })
-      fbq.trackCustom('QualifiedLead', { form_id: formId })
       setPhase('submitted')
     } catch (e) {
       message.error('Failed to submit')
