@@ -141,7 +141,6 @@ const FormRenderer = () => {
         qualifyingTotal: result.total
       })
       fbq.trackCustom('QualifiedLead', { form_id: formId })
-      fbq.track('Lead', { form_id: formId, is_qualified: true })
       setPhase('submitted')
     } catch (e) {
       message.error('Failed to submit')
@@ -159,6 +158,7 @@ const FormRenderer = () => {
             {currentField.options?.map((opt: string) => (
               <Button
                 key={opt}
+                type="primary"
                 block
                 className="text-left h-auto py-3 px-4 whitespace-normal"
                 size="large"
@@ -320,12 +320,7 @@ const FormRenderer = () => {
             </p>
             <a href={`https://wa.me/${waNumber.replace(/[^0-9]/g, '')}?text=${waMessage}`}
                target="_blank" rel="noopener noreferrer">
-              <Button
-                type="primary"
-                size="large"
-                className="bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600"
-                block
-              >
+              <Button type="primary" size="large" block>
                 Chat on WhatsApp
               </Button>
             </a>

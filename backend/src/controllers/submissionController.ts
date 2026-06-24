@@ -41,7 +41,6 @@ export const createSubmission = async (req: Request, res: Response, next: NextFu
       const formSchema = form.schema as any
       const formPixelId = formSchema?.settings?.metaPixelId || undefined
       const capiData: any = {
-        eventName: 'Lead',
         userData: {
           email: contactInfo.email,
           phone: contactInfo.phone,
@@ -58,9 +57,6 @@ export const createSubmission = async (req: Request, res: Response, next: NextFu
         clientIpAddress: req.headers['x-forwarded-for'] as string || req.ip || '',
         clientUserAgent: req.headers['user-agent'] || ''
       }
-      sendToCAPI(capiData).catch((err: Error) => {
-        console.warn('CAPI Lead event failed (non-blocking):', err.message)
-      })
       if (isQualified) {
         sendToCAPI({
           ...capiData,
