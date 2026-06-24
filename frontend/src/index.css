@@ -55,6 +55,17 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+.answer-btn.ant-btn-default {
+  background: #fff !important;
+  color: #1677ff !important;
+  border-color: #91caff !important;
+}
+.answer-btn.ant-btn-default:hover {
+  background: #1d4ed8 !important;
+  color: #fff !important;
+  border-color: #1d4ed8 !important;
+}
+
 .whatsapp-button {
   background: #25D366 !important;
   border-color: #25D366 !important;

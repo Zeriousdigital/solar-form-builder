@@ -160,7 +160,7 @@ const FormRenderer = () => {
               <Button
                 key={opt}
                 block
-                className="text-left h-auto py-3 px-4 whitespace-normal bg-white text-blue-600 border-blue-300 hover:bg-blue-700 hover:text-white hover:border-blue-700"
+                className="answer-btn text-left h-auto py-3 px-4 whitespace-normal"
                 size="large"
                 onClick={() => handleAnswer(opt)}
               >
