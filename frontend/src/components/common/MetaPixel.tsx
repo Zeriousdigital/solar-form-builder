@@ -36,6 +36,7 @@ const MetaPixel = ({ pixelId }: MetaPixelProps) => {
       w.fbq('track', 'PageView')
       api.post('/meta/event', {
         eventName: 'PageView',
+        pixelId: id,
         userData: {},
         customData: {}
       }).then(r => console.log('[MetaPixel] PageView CAPI response:', r.status))

@@ -3,7 +3,7 @@ import { sendToCAPI } from '../services/metaService'
 
 export const sendMetaEvent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { eventName, userData, customData, eventSourceUrl } = req.body
+    const { eventName, userData, customData, eventSourceUrl, pixelId } = req.body
 
     if (!eventName) {
       res.status(400).json({
@@ -13,7 +13,7 @@ export const sendMetaEvent = async (req: Request, res: Response, next: NextFunct
       return
     }
 
-    const validEvents = ['Lead', 'PageView', 'CompleteRegistration', 'Subscribe', 'StartTrial', 'QualifiedLead', 'DisqualifiedLead']
+    const validEvents = ['PageView', 'CompleteRegistration', 'Subscribe', 'StartTrial', 'QualifiedLead', 'DisqualifiedLead']
     if (!validEvents.includes(eventName)) {
       res.status(400).json({
         success: false,
@@ -27,6 +27,7 @@ export const sendMetaEvent = async (req: Request, res: Response, next: NextFunct
       userData: userData || {},
       customData: customData || {},
       eventSourceUrl,
+      pixelId,
       clientIpAddress: req.headers['x-forwarded-for'] as string || req.ip || '',
       clientUserAgent: req.headers['user-agent'] || ''
     })

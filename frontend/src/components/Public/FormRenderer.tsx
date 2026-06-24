@@ -112,6 +112,7 @@ const FormRenderer = () => {
           fbq.trackCustom('DisqualifiedLead', { form_id: formId, score: result.score, total: result.total })
           api.post('/meta/event', {
             eventName: 'DisqualifiedLead',
+            pixelId: form?.settings?.metaPixelId,
             userData: {},
             customData: { form_id: formId, score: result.score, total: result.total }
           }).then(r => console.log('[CAPI] DisqualifiedLead sent:', r.status))
