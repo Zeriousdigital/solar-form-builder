@@ -159,9 +159,8 @@ const FormRenderer = () => {
             {currentField.options?.map((opt: string) => (
               <Button
                 key={opt}
-                type="primary"
                 block
-                className="text-left h-auto py-3 px-4 whitespace-normal"
+                className="text-left h-auto py-3 px-4 whitespace-normal bg-white text-blue-600 border-blue-300 hover:bg-blue-700 hover:text-white hover:border-blue-700"
                 size="large"
                 onClick={() => handleAnswer(opt)}
               >
