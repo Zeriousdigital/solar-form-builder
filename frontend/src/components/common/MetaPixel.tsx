@@ -38,7 +38,8 @@ const MetaPixel = ({ pixelId }: MetaPixelProps) => {
         eventName: 'PageView',
         userData: {},
         customData: {}
-      }).catch(() => {})
+      }).then(r => console.log('[MetaPixel] PageView CAPI response:', r.status))
+        .catch(e => console.error('[MetaPixel] PageView CAPI error:', e.message))
     }
 
     if (pixelId) {

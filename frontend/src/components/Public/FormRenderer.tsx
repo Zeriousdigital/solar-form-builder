@@ -114,7 +114,8 @@ const FormRenderer = () => {
             eventName: 'DisqualifiedLead',
             userData: {},
             customData: { form_id: formId, score: result.score, total: result.total }
-          }).catch(() => {})
+          }).then(r => console.log('[CAPI] DisqualifiedLead sent:', r.status))
+            .catch(e => console.error('[CAPI] DisqualifiedLead error:', e.message))
           navigate(`/form/${formId}/thank-you?qualified=false`)
           return
         }
