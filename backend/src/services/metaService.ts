@@ -14,10 +14,12 @@ export interface CAPIOptions {
   customData?: Record<string, any>
   eventSourceUrl?: string
   pixelId?: string
+  clientIpAddress?: string
+  clientUserAgent?: string
 }
 
 export const sendToCAPI = async (options: CAPIOptions): Promise<any> => {
-  const { eventName, userData, customData, eventSourceUrl, pixelId: formPixelId } = options
+  const { eventName, userData, customData, eventSourceUrl, pixelId: formPixelId, clientIpAddress, clientUserAgent } = options
 
   const settings = await getSettings()
   const pixelId = formPixelId || settings.meta_pixel_id || process.env.META_PIXEL_ID || ''
@@ -46,16 +48,16 @@ export const sendToCAPI = async (options: CAPIOptions): Promise<any> => {
     }
   }
 
+  const user_data: Record<string, any> = { ...userDataPayload }
+  if (clientIpAddress) user_data.client_ip_address = clientIpAddress
+  if (clientUserAgent) user_data.client_user_agent = clientUserAgent
+
   const event = {
     event_name: eventName,
     event_time: Math.floor(Date.now() / 1000),
     action_source: 'website',
     event_source_url: eventSourceUrl || '',
-    user_data: {
-      ...userDataPayload,
-      client_ip_address: '',
-      client_user_agent: ''
-    },
+    user_data,
     custom_data: customData || {}
   }
 

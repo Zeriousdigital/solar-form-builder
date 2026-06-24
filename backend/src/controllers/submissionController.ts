@@ -54,7 +54,9 @@ export const createSubmission = async (req: Request, res: Response, next: NextFu
           submission_id: submission.id
         },
         eventSourceUrl: req.headers.referer as string || undefined,
-        pixelId: formPixelId
+        pixelId: formPixelId,
+        clientIpAddress: req.headers['x-forwarded-for'] as string || req.ip || '',
+        clientUserAgent: req.headers['user-agent'] || ''
       }
       sendToCAPI(capiData).catch((err: Error) => {
         console.warn('CAPI Lead event failed (non-blocking):', err.message)

@@ -26,7 +26,9 @@ export const sendMetaEvent = async (req: Request, res: Response, next: NextFunct
       eventName,
       userData: userData || {},
       customData: customData || {},
-      eventSourceUrl
+      eventSourceUrl,
+      clientIpAddress: req.headers['x-forwarded-for'] as string || req.ip || '',
+      clientUserAgent: req.headers['user-agent'] || ''
     })
 
     res.json({ success: true, data: result })
