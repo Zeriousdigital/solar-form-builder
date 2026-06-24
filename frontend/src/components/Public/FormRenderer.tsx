@@ -113,6 +113,7 @@ const FormRenderer = () => {
           api.post('/meta/event', {
             eventName: 'DisqualifiedLead',
             pixelId: form?.settings?.metaPixelId,
+            accessToken: form?.settings?.metaAccessToken,
             userData: {},
             customData: { form_id: formId, score: result.score, total: result.total }
           }).then(r => console.log('[CAPI] DisqualifiedLead sent:', r.status))
@@ -243,10 +244,11 @@ const FormRenderer = () => {
   )
 
   const formPixelId = form.settings?.metaPixelId
+  const formAccessToken = form.settings?.metaAccessToken
 
   return (
     <>
-      <MetaPixel pixelId={formPixelId} />
+      <MetaPixel pixelId={formPixelId} accessToken={formAccessToken} />
       {(() => {
         if (phase === 'contact-info') {
     return (

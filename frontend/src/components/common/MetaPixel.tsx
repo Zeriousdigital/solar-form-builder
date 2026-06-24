@@ -3,16 +3,17 @@ import api, { settingsApi } from '../../services/api'
 
 interface MetaPixelProps {
   pixelId?: string
+  accessToken?: string
 }
 
-const MetaPixel = ({ pixelId }: MetaPixelProps) => {
+const MetaPixel = ({ pixelId, accessToken }: MetaPixelProps) => {
   const initialized = useRef(false)
 
   useEffect(() => {
     if (initialized.current) return
     initialized.current = true
 
-    const initPixel = (id: string) => {
+    const initPixel = (id: string, token?: string) => {
       console.log(`[MetaPixel] Initializing with Pixel ID: ${id}`)
       const w = window as any
       if (!w.fbq) {
@@ -37,6 +38,7 @@ const MetaPixel = ({ pixelId }: MetaPixelProps) => {
       api.post('/meta/event', {
         eventName: 'PageView',
         pixelId: id,
+        accessToken: token,
         userData: {},
         customData: {}
       }).then(r => console.log('[MetaPixel] PageView CAPI response:', r.status))
@@ -45,7 +47,7 @@ const MetaPixel = ({ pixelId }: MetaPixelProps) => {
 
     if (pixelId) {
       console.log('[MetaPixel] Using per-form Pixel ID')
-      initPixel(pixelId)
+      initPixel(pixelId, accessToken)
       return
     }
 

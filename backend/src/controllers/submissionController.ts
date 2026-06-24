@@ -40,6 +40,7 @@ export const createSubmission = async (req: Request, res: Response, next: NextFu
     if (    contactInfo.email || contactInfo.phone || contactInfo.name) {
       const formSchema = form.schema as any
       const formPixelId = formSchema?.settings?.metaPixelId || undefined
+      const formAccessToken = formSchema?.settings?.metaAccessToken || undefined
       const capiData: any = {
         userData: {
           email: contactInfo.email,
@@ -54,6 +55,7 @@ export const createSubmission = async (req: Request, res: Response, next: NextFu
         },
         eventSourceUrl: req.headers.referer as string || undefined,
         pixelId: formPixelId,
+        accessToken: formAccessToken,
         clientIpAddress: req.headers['x-forwarded-for'] as string || req.ip || '',
         clientUserAgent: req.headers['user-agent'] || ''
       }

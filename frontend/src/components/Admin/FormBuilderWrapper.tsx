@@ -38,6 +38,7 @@ const FormBuilderWrapper = () => {
   const [description, setDescription] = useState<string>('')
   const [whatsapp, setWhatsapp] = useState<string>('234')
   const [metaPixelId, setMetaPixelId] = useState<string>('')
+  const [metaAccessToken, setMetaAccessToken] = useState<string>('')
   const [requiredScore, setRequiredScore] = useState<number>(1)
   const [saving, setSaving] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
@@ -66,6 +67,7 @@ const FormBuilderWrapper = () => {
       setFields(savedFields || [])
       setWhatsapp(settings?.whatsappNumber || '234')
       setMetaPixelId(settings?.metaPixelId || '')
+      setMetaAccessToken(settings?.metaAccessToken || '')
       setRequiredScore(settings?.requiredQualifyingScore ?? 1)
     } catch (e) {
       message.error('Failed to load form')
@@ -191,7 +193,8 @@ const FormBuilderWrapper = () => {
           whatsappNumber: whatsapp,
           whatsappMessage: 'Hi, I just completed the solar assessment form',
           requiredQualifyingScore: requiredScore,
-          metaPixelId: metaPixelId || undefined
+          metaPixelId: metaPixelId || undefined,
+          metaAccessToken: metaAccessToken || undefined
         },
         isPublished: publish
       }
@@ -256,6 +259,15 @@ const FormBuilderWrapper = () => {
               placeholder="1234567890"
             />
             <span className="text-xs text-gray-400">Leave blank to use the global Pixel ID from Settings</span>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">CAPI Access Token (optional)</label>
+            <Input.Password
+              value={metaAccessToken}
+              onChange={(e) => setMetaAccessToken(e.target.value)}
+              placeholder="EAAB...927Z"
+            />
+            <span className="text-xs text-gray-400">Required if using a different Pixel ID per form</span>
           </div>
         </div>
       </Card>

@@ -14,16 +14,17 @@ export interface CAPIOptions {
   customData?: Record<string, any>
   eventSourceUrl?: string
   pixelId?: string
+  accessToken?: string
   clientIpAddress?: string
   clientUserAgent?: string
 }
 
 export const sendToCAPI = async (options: CAPIOptions): Promise<any> => {
-  const { eventName, userData, customData, eventSourceUrl, pixelId: formPixelId, clientIpAddress, clientUserAgent } = options
+  const { eventName, userData, customData, eventSourceUrl, pixelId: formPixelId, accessToken: formAccessToken, clientIpAddress, clientUserAgent } = options
 
   const settings = await getSettings()
   const pixelId = formPixelId || settings.meta_pixel_id || process.env.META_PIXEL_ID || ''
-  const accessToken = settings.meta_access_token || process.env.META_ACCESS_TOKEN || ''
+  const accessToken = formAccessToken || settings.meta_access_token || process.env.META_ACCESS_TOKEN || ''
   const testEventCode = settings.meta_test_event_code || process.env.META_TEST_EVENT_CODE || ''
 
   if (!pixelId || !accessToken) {
