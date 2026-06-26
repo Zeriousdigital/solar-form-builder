@@ -45,6 +45,16 @@ const FormRenderer = () => {
     if (formId) fetchForm()
   }, [formId])
 
+  useEffect(() => {
+    if (form && !hasAnyQualifying && phase === 'qualifying') {
+      if (nonQualifyingFields.length > 0) {
+        setPhase('non-qualifying')
+      } else {
+        setPhase('contact-info')
+      }
+    }
+  }, [form, hasAnyQualifying, phase])
+
   const fetchForm = async () => {
     try {
       setLoading(true)
@@ -63,22 +73,28 @@ const FormRenderer = () => {
     }
   }
 
-  const qualifyingFields = useMemo(() =>
-    (form?.fields || []).filter(f => f.isQualifying),
+  const hasAnyQualifying = useMemo(() =>
+    (form?.fields || []).some(f => f.isQualifying),
     [form?.fields]
+  )
+
+  const qualifyingFields = useMemo(() =>
+    hasAnyQualifying ? (form?.fields || []).filter(f => f.isQualifying) : [],
+    [hasAnyQualifying, form?.fields]
   )
 
   const nonQualifyingFields = useMemo(() =>
-    (form?.fields || []).filter(f => !f.isQualifying),
-    [form?.fields]
+    hasAnyQualifying ? (form?.fields || []).filter(f => !f.isQualifying) : (form?.fields || []),
+    [hasAnyQualifying, form?.fields]
   )
 
-  const isQualifyingPhase = phase === 'qualifying'
+  const hasQualifyingFields = qualifyingFields.length > 0
+  const isQualifyingPhase = phase === 'qualifying' && hasQualifyingFields
   const currentFields = isQualifyingPhase ? qualifyingFields : nonQualifyingFields
   const currentField = currentFields[currentStep] || null
   const totalSteps = currentFields.length
   const allFieldsCount = form?.fields.length || 0
-  const answeredCount = qualifyingFields.filter(f => answers[f.id] !== undefined).length
+  const answeredCount = (isQualifyingPhase ? qualifyingFields : form?.fields || []).filter(f => answers[f.id] !== undefined).length
 
   const progress = useMemo(() => {
     if (!form?.fields.length) return 0
