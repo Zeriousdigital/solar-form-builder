@@ -97,7 +97,7 @@ export const buildWhatsAppMessage = (
   answers: Record<string, any>,
   contact: { name?: string; email?: string; phone?: string }
 ): string => {
-  const parts: string[] = []
+  const lines: string[] = ['New Lead Alert', '']
 
   fields.forEach(field => {
     const answer = answers[field.id]
@@ -105,30 +105,13 @@ export const buildWhatsAppMessage = (
 
     const label = field.label.trim().replace(/\?$/, '')
     const val = Array.isArray(answer) ? answer.join(', ') : String(answer)
-    const lowerLabel = label.toLowerCase()
-    const isYes = /^y(es)?$/i.test(val) || val.toLowerCase() === 'true'
-    const isNo = /^n(o)?$/i.test(val) || val.toLowerCase() === 'false'
-
-    if (lowerLabel.startsWith('do you')) {
-      const rest = label.replace(/^do you\s+/i, '').replace(/\byour\b/gi, 'my')
-      parts.push(isYes ? `Yes, I ${rest}` : `No, I don't ${rest}`)
-    } else if (lowerLabel.startsWith('does your')) {
-      const fieldPart = label.replace(/^does your\s+/i, '').replace(/\byour\b/gi, 'my')
-      parts.push(isYes ? `Yes, my ${fieldPart}` : `No, my ${fieldPart} does not`)
-    } else if (lowerLabel.startsWith('are you')) {
-      const rest = label.replace(/^are you\s+/i, '').replace(/\byour\b/gi, 'my')
-      parts.push(isYes ? `Yes, I am ${rest}` : `No, I am not ${rest}`)
-    } else if (lowerLabel.startsWith('is your')) {
-      const rest = label.replace(/^is your\s+/i, '').replace(/\byour\b/gi, 'my')
-      parts.push(isYes ? `Yes, my ${rest}` : `No, my ${rest} is not`)
-    } else {
-      parts.push(`${label}: ${val}`)
-    }
+    lines.push(`${label}: ${val}`)
   })
 
-  if (contact.name) parts.push(`My name is ${contact.name}`)
-  if (contact.email) parts.push(`My email is ${contact.email}`)
-  if (contact.phone) parts.push(`My phone is ${contact.phone}`)
+  lines.push('', 'Contact Details:')
+  if (contact.name) lines.push(`Name: ${contact.name}`)
+  if (contact.email) lines.push(`Email: ${contact.email}`)
+  if (contact.phone) lines.push(`Phone: ${contact.phone}`)
 
-  return parts.join('. ')
+  return lines.join('\n')
 }
