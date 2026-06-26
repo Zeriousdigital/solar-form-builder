@@ -142,7 +142,11 @@ const FormRenderer = () => {
         qualifyingScore: result.score,
         qualifyingTotal: result.total
       })
-      setPhase('submitted')
+      sessionStorage.setItem('waNumber', form.settings?.whatsappNumber || '2348012345678')
+      sessionStorage.setItem('waMessage', buildWhatsAppMessage(form.fields, answers, contactInfo))
+      sessionStorage.setItem('pixelId', form.settings?.metaPixelId || '')
+      sessionStorage.setItem('accessToken', form.settings?.metaAccessToken || '')
+      navigate(`/form/${formId}/thank-you?qualified=true`)
     } catch (e) {
       message.error('Failed to submit')
     } finally {
@@ -303,30 +307,6 @@ const FormRenderer = () => {
           </div>
         </div>
       </div>
-      )
-    }
-
-    if (phase === 'submitted') {
-      const waNumber = form.settings?.whatsappNumber || '2348012345678'
-      const waMessage = encodeURIComponent(
-        buildWhatsAppMessage(form.fields, answers, contactInfo)
-      )
-      return (
-        <div className="form-container items-center justify-center text-center">
-          <div className="text-center">
-            <div className="text-5xl mb-4">✅</div>
-            <h3 className="text-xl font-semibold mb-2 text-green-700">Thank You!</h3>
-            <p className="text-gray-500 mb-6">
-              Your information has been submitted. Click below to chat with us on WhatsApp.
-            </p>
-            <a href={`https://wa.me/${waNumber.replace(/[^0-9]/g, '')}?text=${waMessage}`}
-               target="_blank" rel="noopener noreferrer">
-              <Button type="primary" size="large" block>
-                Chat on WhatsApp
-              </Button>
-            </a>
-          </div>
-        </div>
       )
     }
 
