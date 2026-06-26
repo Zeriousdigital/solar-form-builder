@@ -97,7 +97,7 @@ export const buildWhatsAppMessage = (
   answers: Record<string, any>,
   contact: { name?: string; email?: string; phone?: string }
 ): string => {
-  const lines: string[] = ['New Lead Alert', '']
+  const lines: string[] = ['Hey I just came from your form', '']
 
   fields.forEach(field => {
     const answer = answers[field.id]
