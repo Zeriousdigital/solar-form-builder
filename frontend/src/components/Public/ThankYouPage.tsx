@@ -44,7 +44,7 @@ const ThankYouPage = () => {
             </p>
             <a href={`https://wa.me/${waNumber.replace(/[^0-9]/g, '')}?text=${waMessage}`}
                target="_blank" rel="noopener noreferrer">
-              <Button type="primary" size="large" block>
+              <Button className="whatsapp-button" type="primary" size="large" block>
                 Chat on WhatsApp
               </Button>
             </a>
