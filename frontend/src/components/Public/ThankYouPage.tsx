@@ -35,6 +35,7 @@ const ThankYouPage = () => {
     return (
       <>
         <MetaPixel pixelId={pixelId} accessToken={accessToken} />
+        <div className="form-page-center">
         <div className="form-container items-center justify-center text-center">
           <div className="text-center">
             <div className="text-5xl mb-4">✅</div>
@@ -50,6 +51,7 @@ const ThankYouPage = () => {
             </a>
           </div>
         </div>
+        </div>
       </>
     )
   }
@@ -57,12 +59,14 @@ const ThankYouPage = () => {
   return (
     <>
       <MetaPixel pixelId={pixelId} accessToken={accessToken} />
+      <div className="form-page-center">
       <div className="form-container items-center justify-center text-center">
         <Result
           icon={<CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 64 }} />}
           title="Not the Right Fit"
           subTitle="You're not a right fit for our solar solutions at this time, but thank you for your time and interest."
         />
+      </div>
       </div>
     </>
   )

@@ -276,6 +276,7 @@ const FormRenderer = () => {
   return (
     <>
       <MetaPixel pixelId={formPixelId} accessToken={formAccessToken} />
+      <div className="form-page-center">
       {(() => {
         if (phase === 'contact-info') {
     return (
@@ -358,6 +359,7 @@ const FormRenderer = () => {
       </div>
     )
   })()}
+      </div>
     </>
   )
 }
