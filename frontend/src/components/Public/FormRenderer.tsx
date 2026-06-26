@@ -101,6 +101,19 @@ const FormRenderer = () => {
       } else if (isQualifyingPhase) {
         const result = calculateQualifyingScore(form?.fields || [], newAnswers)
         setScore(result)
+        if (result.disqualified) {
+          fbq.trackCustom('DisqualifiedLead', { form_id: formId, score: result.score, total: result.total })
+          api.post('/meta/event', {
+            eventName: 'DisqualifiedLead',
+            pixelId: form?.settings?.metaPixelId,
+            accessToken: form?.settings?.metaAccessToken,
+            userData: {},
+            customData: { form_id: formId, score: result.score, total: result.total }
+          }).then(r => console.log('[CAPI] DisqualifiedLead sent:', r.status))
+            .catch(e => console.error('[CAPI] DisqualifiedLead error:', e.message))
+          navigate(`/form/${formId}/thank-you?qualified=false`)
+          return
+        }
         const required = form?.settings?.requiredQualifyingScore ?? result.total
         if (result.score >= required) {
           if (nonQualifyingFields.length > 0) {

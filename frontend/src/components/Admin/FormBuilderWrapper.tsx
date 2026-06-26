@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Button, message, Input, Card, Tabs, Tag, Space, Modal, Spin, Switch, InputNumber, Checkbox, Badge } from 'antd'
-import { SaveOutlined, SendOutlined, PlusOutlined, DeleteOutlined, EditOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { SaveOutlined, SendOutlined, PlusOutlined, DeleteOutlined, EditOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import { formsApi } from '../../services/api'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { parseFormSchema, hasCorrectAnswerSupport } from '../../utils/helpers'
@@ -86,7 +86,8 @@ const FormBuilderWrapper = () => {
       options: defaults.options || [],
       placeholder: defaults.placeholder || '',
       isQualifying: false,
-      correctAnswers: []
+      correctAnswers: [],
+      disqualifyingAnswers: []
     }
     setFields([...fields, newField])
   }
@@ -103,6 +104,18 @@ const FormBuilderWrapper = () => {
         ...f,
         isQualifying,
         correctAnswers: isQualifying && hasCorrectAnswerSupport(f.type) ? (f.correctAnswers || []) : []
+      }
+    }))
+  }
+
+  const toggleDisqualifying = (fieldId: string) => {
+    setFields(fields.map(f => {
+      if (f.id !== fieldId) return f
+      const isDisqualifying = !f.isDisqualifying
+      return {
+        ...f,
+        isDisqualifying,
+        disqualifyingAnswers: isDisqualifying && hasCorrectAnswerSupport(f.type) ? (f.disqualifyingAnswers || []) : []
       }
     }))
   }
@@ -152,6 +165,25 @@ const FormBuilderWrapper = () => {
     }
   }
 
+  const toggleDisqualifyingAnswer = (option: string) => {
+    if (!editingField) return
+    const current = editingField.disqualifyingAnswers || []
+    const isSelected = current.includes(option)
+    if (editingField.type === 'multiple_choice' || editingField.type === 'dropdown') {
+      setEditingField({
+        ...editingField,
+        disqualifyingAnswers: isSelected ? [] : [option]
+      })
+    } else {
+      setEditingField({
+        ...editingField,
+        disqualifyingAnswers: isSelected
+          ? current.filter(a => a !== option)
+          : [...current, option]
+      })
+    }
+  }
+
   const saveForm = async (publish: boolean) => {
     if (!name) {
       message.warning('Please enter a form name')
@@ -177,6 +209,13 @@ const FormBuilderWrapper = () => {
     for (const f of qualifyingFields) {
       if (!f.correctAnswers || f.correctAnswers.length === 0) {
         message.warning(`"${f.label}" is marked as qualifying but has no correct answer set`)
+        return
+      }
+    }
+    const disqualifyingFields = fields.filter(f => f.isDisqualifying)
+    for (const f of disqualifyingFields) {
+      if (!f.disqualifyingAnswers || f.disqualifyingAnswers.length === 0) {
+        message.warning(`"${f.label}" is marked as disqualifying but has no disqualifying answers set`)
         return
       }
     }
@@ -306,7 +345,7 @@ const FormBuilderWrapper = () => {
                       <Card
                         key={field.id}
                         size="small"
-                        className={`border-l-4 ${field.isQualifying ? 'border-l-green-500 bg-green-50' : 'border-l-blue-500'}`}
+                        className={`border-l-4 ${field.isDisqualifying ? 'border-l-red-500 bg-red-50' : field.isQualifying ? 'border-l-green-500 bg-green-50' : 'border-l-blue-500'}`}
                       >
                         <div className="flex justify-between items-center">
                           <div className="flex-1">
@@ -321,6 +360,14 @@ const FormBuilderWrapper = () => {
                                     : ' (no answer set)'}
                                 </Tag>
                               )}
+                              {field.isDisqualifying && (
+                                <Tag color="red" icon={<CloseCircleOutlined />}>
+                                  Disqualifying
+                                  {field.disqualifyingAnswers && field.disqualifyingAnswers.length > 0
+                                    ? ` (${field.disqualifyingAnswers.length})`
+                                    : ''}
+                                </Tag>
+                              )}
                             </div>
                             <span className="font-medium">{field.label}</span>
                             {field.options && field.options.length > 0 && (
@@ -331,6 +378,11 @@ const FormBuilderWrapper = () => {
                             {field.isQualifying && field.correctAnswers && field.correctAnswers.length > 0 && (
                               <div className="text-xs text-green-600 mt-1">
                                 Correct: {field.correctAnswers.join(', ')}
+                              </div>
+                            )}
+                            {field.isDisqualifying && field.disqualifyingAnswers && field.disqualifyingAnswers.length > 0 && (
+                              <div className="text-xs text-red-600 mt-1">
+                                Disqualifying: {field.disqualifyingAnswers.join(', ')}
                               </div>
                             )}
                           </div>
@@ -362,6 +414,13 @@ const FormBuilderWrapper = () => {
                                   checked={field.isQualifying}
                                   onChange={() => toggleQualifying(field.id)}
                                   checkedChildren={<CheckCircleOutlined />}
+                                />
+                                <span className="text-xs text-gray-500">Disqualifying</span>
+                                <Switch
+                                  size="small"
+                                  checked={field.isDisqualifying}
+                                  onChange={() => toggleDisqualifying(field.id)}
+                                  checkedChildren={<CloseCircleOutlined />}
                                 />
                               </Space>
                             )}
@@ -410,25 +469,26 @@ const FormBuilderWrapper = () => {
                         if (!a.isQualifying && b.isQualifying) return 1
                         return 0
                       }).map((field, index) => (
-                        <div key={field.id} className={`p-3 bg-white rounded shadow-sm border-l-4 ${field.isQualifying ? 'border-l-green-500' : 'border-l-gray-300'}`}>
+                        <div key={field.id} className={`p-3 bg-white rounded shadow-sm border-l-4 ${field.isDisqualifying ? 'border-l-red-500' : field.isQualifying ? 'border-l-green-500' : 'border-l-gray-300'}`}>
                           <p className="text-sm font-medium mb-1">
                             {field.isQualifying && <Tag color="green">Qualifying</Tag>}
+                            {field.isDisqualifying && <Tag color="red">Disqualifying</Tag>}
                             Q{index + 1}: {field.label}
                             {field.required && <span className="text-red-500 ml-1">*</span>}
                           </p>
                           {field.type === 'multiple_choice' && field.options?.map((opt, i) => (
                             <div key={i} className="flex items-center gap-2 py-1">
                               <input type="radio" disabled />
-                              <span className={`text-sm ${field.correctAnswers?.includes(opt) ? 'text-green-600 font-medium' : 'text-gray-600'}`}>
-                                {opt}{field.correctAnswers?.includes(opt) ? ' ✓' : ''}
+                              <span className={`text-sm ${field.correctAnswers?.includes(opt) ? 'text-green-600 font-medium' : field.disqualifyingAnswers?.includes(opt) ? 'text-red-600 font-medium' : 'text-gray-600'}`}>
+                                {opt}{field.correctAnswers?.includes(opt) ? ' ✓' : field.disqualifyingAnswers?.includes(opt) ? ' ✗' : ''}
                               </span>
                             </div>
                           ))}
                           {field.type === 'checkbox' && field.options?.map((opt, i) => (
                             <div key={i} className="flex items-center gap-2 py-1">
                               <input type="checkbox" disabled />
-                              <span className={`text-sm ${field.correctAnswers?.includes(opt) ? 'text-green-600 font-medium' : 'text-gray-600'}`}>
-                                {opt}{field.correctAnswers?.includes(opt) ? ' ✓' : ''}
+                              <span className={`text-sm ${field.correctAnswers?.includes(opt) ? 'text-green-600 font-medium' : field.disqualifyingAnswers?.includes(opt) ? 'text-red-600 font-medium' : 'text-gray-600'}`}>
+                                {opt}{field.correctAnswers?.includes(opt) ? ' ✓' : field.disqualifyingAnswers?.includes(opt) ? ' ✗' : ''}
                               </span>
                             </div>
                           ))}
@@ -439,7 +499,9 @@ const FormBuilderWrapper = () => {
                           )}
                           {(field.type === 'short_answer' || field.type === 'email' || field.type === 'phone' || field.type === 'numeric') && (
                             <div className="text-sm text-gray-400 py-1 border-b">
-                              {field.placeholder}{field.correctAnswers?.length ? ` (Answer: ${field.correctAnswers[0]})` : ''}
+                              {field.placeholder}
+                              {field.correctAnswers?.length ? ` (Answer: ${field.correctAnswers[0]})` : ''}
+                              {field.disqualifyingAnswers?.length ? ` (Disqualifying: ${field.disqualifyingAnswers[0]})` : ''}
                             </div>
                           )}
                           {field.type === 'date' && (
@@ -522,7 +584,8 @@ const FormBuilderWrapper = () => {
                     setEditingField({
                       ...editingField,
                       options: opts,
-                      correctAnswers: (editingField.correctAnswers || []).filter(a => opts.includes(a))
+                      correctAnswers: (editingField.correctAnswers || []).filter(a => opts.includes(a)),
+                      disqualifyingAnswers: (editingField.disqualifyingAnswers || []).filter(a => opts.includes(a))
                     })
                   }}
                   placeholder="Option 1&#10;Option 2&#10;Option 3"
@@ -555,33 +618,67 @@ const FormBuilderWrapper = () => {
                 />
               </div>
             )}
-            {editingField.isQualifying && (
-              <div className="bg-green-50 p-3 rounded border border-green-200">
-                <label className="block text-sm font-medium text-green-800 mb-2">
-                  Mark correct answer{editingField.type === 'checkbox' ? 's' : ''}
-                </label>
-                {['multiple_choice', 'dropdown', 'checkbox'].includes(editingField.type) ? (
-                  <div className="space-y-1">
-                    {editingField.options?.map(opt => (
-                      <div key={opt} className="flex items-center gap-2">
-                        <Checkbox
-                          checked={(editingField.correctAnswers || []).includes(opt)}
-                          onChange={() => toggleCorrectAnswer(opt)}
-                        >
-                          <span className={`text-sm ${(editingField.correctAnswers || []).includes(opt) ? 'text-green-700 font-medium' : ''}`}>
-                            {opt}
-                          </span>
-                        </Checkbox>
+            {(editingField.isQualifying || editingField.isDisqualifying) && (
+              <div className="space-y-2">
+                {editingField.isQualifying && (
+                  <div className="bg-green-50 p-3 rounded border border-green-200">
+                    <label className="block text-sm font-medium text-green-800 mb-2">
+                      Mark correct answer{editingField.type === 'checkbox' ? 's' : ''}
+                    </label>
+                    {['multiple_choice', 'dropdown', 'checkbox'].includes(editingField.type) ? (
+                      <div className="space-y-1">
+                        {editingField.options?.map(opt => (
+                          <div key={opt} className="flex items-center gap-2">
+                            <Checkbox
+                              checked={(editingField.correctAnswers || []).includes(opt)}
+                              onChange={() => toggleCorrectAnswer(opt)}
+                            >
+                              <span className={`text-sm ${(editingField.correctAnswers || []).includes(opt) ? 'text-green-700 font-medium' : ''}`}>
+                                {opt}
+                              </span>
+                            </Checkbox>
+                          </div>
+                        ))}
+                        {(!editingField.options || editingField.options.length === 0) && (
+                          <p className="text-xs text-red-500">Add options first to mark correct answers</p>
+                        )}
                       </div>
-                    ))}
-                    {(!editingField.options || editingField.options.length === 0) && (
-                      <p className="text-xs text-red-500">Add options first to mark correct answers</p>
+                    ) : (
+                      <p className="text-xs text-green-700">
+                        Correct answer set in the field above. Answer must match exactly.
+                      </p>
                     )}
                   </div>
-                ) : (
-                  <p className="text-xs text-green-700">
-                    Correct answer set in the field above. Answer must match exactly.
-                  </p>
+                )}
+                {editingField.isDisqualifying && (
+                  <div className="bg-red-50 p-3 rounded border border-red-200">
+                    <label className="block text-sm font-medium text-red-800 mb-2">
+                      Mark disqualifying answer{editingField.type === 'checkbox' ? 's' : ''}
+                    </label>
+                    {['multiple_choice', 'dropdown', 'checkbox'].includes(editingField.type) ? (
+                      <div className="space-y-1">
+                        {editingField.options?.map(opt => (
+                          <div key={opt} className="flex items-center gap-2">
+                            <Checkbox
+                              checked={(editingField.disqualifyingAnswers || []).includes(opt)}
+                              onChange={() => toggleDisqualifyingAnswer(opt)}
+                            >
+                              <span className={`text-sm ${(editingField.disqualifyingAnswers || []).includes(opt) ? 'text-red-700 font-medium' : ''}`}>
+                                {opt}
+                              </span>
+                            </Checkbox>
+                          </div>
+                        ))}
+                        {(!editingField.options || editingField.options.length === 0) && (
+                          <p className="text-xs text-red-500">Add options first to mark disqualifying answers</p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-red-700">
+                        Disqualifying answer set in the field above. If answer matches, user is disqualified.
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             )}

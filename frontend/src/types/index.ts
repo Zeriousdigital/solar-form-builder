@@ -7,6 +7,7 @@ export interface FormField {
   placeholder?: string
   isQualifying?: boolean
   correctAnswers?: string[]
+  disqualifyingAnswers?: string[]
   conditions?: FieldCondition[]
 }
 

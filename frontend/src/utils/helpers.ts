@@ -64,13 +64,39 @@ export const getProgressPercent = (current: number, total: number): number => {
 export const calculateQualifyingScore = (
   fields: FormField[],
   answers: Record<string, any>
-): { score: number; total: number } => {
+): { score: number; total: number; disqualified: boolean } => {
   const qualifyingFields = fields.filter(f => f.isQualifying)
   let score = 0
+  let disqualified = false
   for (const field of qualifyingFields) {
     const userAnswer = answers[field.id]
     const correctAnswers = field.correctAnswers || []
-    if (!correctAnswers.length) continue
+    const disqualifyingAnswers = field.disqualifyingAnswers || []
+    const hasCorrect = correctAnswers.length > 0
+    const hasDisqualifying = disqualifyingAnswers.length > 0
+
+    if (hasDisqualifying) {
+      if (field.type === 'checkbox') {
+        const userSelected = Array.isArray(userAnswer) ? userAnswer : []
+        const qualifyingCount = userSelected.filter((a: string) => correctAnswers.includes(a)).length
+        const disqualifyingCount = userSelected.filter((a: string) => disqualifyingAnswers.includes(a)).length
+        if (disqualifyingCount > qualifyingCount) {
+          disqualified = true
+          break
+        }
+        if (qualifyingCount > disqualifyingCount) score++
+      } else {
+        const answerStr = String(userAnswer ?? '')
+        if (disqualifyingAnswers.includes(answerStr)) {
+          disqualified = true
+          break
+        }
+        if (correctAnswers.includes(answerStr)) score++
+      }
+      continue
+    }
+
+    if (!hasCorrect) continue
     if (field.type === 'checkbox') {
       const userSelected = (Array.isArray(userAnswer) ? userAnswer : []).sort()
       const correct = [...correctAnswers].sort()
@@ -81,7 +107,7 @@ export const calculateQualifyingScore = (
       if (correctAnswers.includes(String(userAnswer ?? ''))) score++
     }
   }
-  return { score, total: qualifyingFields.length }
+  return { score, total: qualifyingFields.length, disqualified }
 }
 
 export const isAnswerFieldType = (type: string): boolean => {
