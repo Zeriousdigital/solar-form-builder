@@ -31,6 +31,7 @@ function App() {
             <Route path="builder" element={<FormBuilderWrapper />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
+          <Route path="/thank-you" element={<ThankYouPage />} />
           <Route path="/form/:formId" element={<FormRenderer />} />
           <Route path="/form/:formId/thank-you" element={<ThankYouPage />} />
           <Route path="/" element={<FormRenderer />} />

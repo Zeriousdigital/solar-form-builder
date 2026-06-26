@@ -113,7 +113,7 @@ const FormRenderer = () => {
               customData: { form_id: formId, good: result.good, bad: result.bad }
             }).then(r => console.log('[CAPI] DisqualifiedLead sent:', r.status))
               .catch(e => console.error('[CAPI] DisqualifiedLead error:', e.message))
-            navigate(`/form/${formId}/thank-you?qualified=false`)
+            navigate(`/thank-you?formId=${formId}&qualified=false`)
             return
           }
           if (nonQualifyingFields.length > 0) {
@@ -141,7 +141,7 @@ const FormRenderer = () => {
               customData: { form_id: formId, score: result.score, total: result.total }
             }).then(r => console.log('[CAPI] DisqualifiedLead sent:', r.status))
               .catch(e => console.error('[CAPI] DisqualifiedLead error:', e.message))
-            navigate(`/form/${formId}/thank-you?qualified=false`)
+            navigate(`/thank-you?formId=${formId}&qualified=false`)
             return
           }
         }
@@ -170,7 +170,7 @@ const FormRenderer = () => {
       sessionStorage.setItem('waMessage', buildWhatsAppMessage(form.fields, answers, contactInfo))
       sessionStorage.setItem('pixelId', form.settings?.metaPixelId || '')
       sessionStorage.setItem('accessToken', form.settings?.metaAccessToken || '')
-      navigate(`/form/${formId}/thank-you?qualified=true`)
+      navigate(`/thank-you?formId=${formId}&qualified=true`)
     } catch (e) {
       message.error('Failed to submit')
     } finally {

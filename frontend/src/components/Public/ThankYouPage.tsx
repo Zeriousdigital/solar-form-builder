@@ -1,4 +1,4 @@
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { Button, Result } from 'antd'
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import { useEffect } from 'react'
@@ -6,8 +6,8 @@ import { fbq } from '../../services/meta'
 import MetaPixel from '../common/MetaPixel'
 
 const ThankYouPage = () => {
-  const { formId } = useParams()
   const [searchParams] = useSearchParams()
+  const formId = searchParams.get('formId')
   const qualified = searchParams.get('qualified') === 'true'
   const pixelId = sessionStorage.getItem('pixelId') || undefined
   const accessToken = sessionStorage.getItem('accessToken') || undefined
