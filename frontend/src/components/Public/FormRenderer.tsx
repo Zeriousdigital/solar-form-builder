@@ -286,10 +286,7 @@ const FormRenderer = () => {
         <div className="question-enter">
           <h3 className="text-xl font-semibold mb-1 text-green-700">You Qualify!</h3>
           <p className="text-gray-500 mb-6">
-            {(form?.fields?.some(f => f.disqualifyingAnswers?.length)
-              ? `You answered ${score.good ?? score.score} qualifying vs ${score.bad ?? 0} disqualifying — you qualify!`
-              : `You scored ${score.score}/${score.total}.`
-            )} Enter your details below and we'll connect you with a solar specialist.
+            Enter your details below and we'll connect you with a solar specialist.
           </p>
           <div className="space-y-4">
             <div>
