@@ -85,6 +85,15 @@ body {
   background: #fff !important;
 }
 
+.dark-blue-btn {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+.dark-blue-btn:hover {
+  background: #1e3a8a !important;
+  border-color: #1e3a8a !important;
+}
+
 .ant-btn-primary.whatsapp-button {
   background: #25D366 !important;
   border-color: #25D366 !important;

@@ -325,7 +325,7 @@ const FormRenderer = () => {
               block
               onClick={handleContactSubmit}
               loading={submitting}
-              className="mt-4"
+              className="mt-4 dark-blue-btn"
             >
               Submit & Chat on WhatsApp
             </Button>
