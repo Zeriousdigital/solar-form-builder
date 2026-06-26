@@ -285,7 +285,6 @@ const FormRenderer = () => {
           <div className="progress-bar-fill" style={{ width: '100%' }} />
         </div>
         <div className="question-enter">
-          <h3 className="text-xl font-semibold mb-1 text-green-700">You Qualify!</h3>
           <p className="text-gray-500 mb-6">
             Enter your details below and we'll connect you with a solar specialist.
           </p>
