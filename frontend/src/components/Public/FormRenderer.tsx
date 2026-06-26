@@ -101,21 +101,21 @@ const FormRenderer = () => {
       } else if (isQualifyingPhase) {
         const result = calculateQualifyingScore(form?.fields || [], newAnswers)
         setScore(result)
-        if (result.disqualified) {
-          fbq.trackCustom('DisqualifiedLead', { form_id: formId, score: result.score, total: result.total })
-          api.post('/meta/event', {
-            eventName: 'DisqualifiedLead',
-            pixelId: form?.settings?.metaPixelId,
-            accessToken: form?.settings?.metaAccessToken,
-            userData: {},
-            customData: { form_id: formId, score: result.score, total: result.total }
-          }).then(r => console.log('[CAPI] DisqualifiedLead sent:', r.status))
-            .catch(e => console.error('[CAPI] DisqualifiedLead error:', e.message))
-          navigate(`/form/${formId}/thank-you?qualified=false`)
-          return
-        }
-        const required = form?.settings?.requiredQualifyingScore ?? result.total
-        if (result.score >= required) {
+        const hasDisqualifyingMarks = form?.fields?.some(f => f.disqualifyingAnswers?.length) ?? false
+        if (hasDisqualifyingMarks) {
+          if (result.bad > result.good) {
+            fbq.trackCustom('DisqualifiedLead', { form_id: formId, good: result.good, bad: result.bad })
+            api.post('/meta/event', {
+              eventName: 'DisqualifiedLead',
+              pixelId: form?.settings?.metaPixelId,
+              accessToken: form?.settings?.metaAccessToken,
+              userData: {},
+              customData: { form_id: formId, good: result.good, bad: result.bad }
+            }).then(r => console.log('[CAPI] DisqualifiedLead sent:', r.status))
+              .catch(e => console.error('[CAPI] DisqualifiedLead error:', e.message))
+            navigate(`/form/${formId}/thank-you?qualified=false`)
+            return
+          }
           if (nonQualifyingFields.length > 0) {
             setPhase('non-qualifying')
             setCurrentStep(0)
@@ -123,17 +123,27 @@ const FormRenderer = () => {
             setPhase('contact-info')
           }
         } else {
-          fbq.trackCustom('DisqualifiedLead', { form_id: formId, score: result.score, total: result.total })
-          api.post('/meta/event', {
-            eventName: 'DisqualifiedLead',
-            pixelId: form?.settings?.metaPixelId,
-            accessToken: form?.settings?.metaAccessToken,
-            userData: {},
-            customData: { form_id: formId, score: result.score, total: result.total }
-          }).then(r => console.log('[CAPI] DisqualifiedLead sent:', r.status))
-            .catch(e => console.error('[CAPI] DisqualifiedLead error:', e.message))
-          navigate(`/form/${formId}/thank-you?qualified=false`)
-          return
+          const required = form?.settings?.requiredQualifyingScore ?? result.total
+          if (result.score >= required) {
+            if (nonQualifyingFields.length > 0) {
+              setPhase('non-qualifying')
+              setCurrentStep(0)
+            } else {
+              setPhase('contact-info')
+            }
+          } else {
+            fbq.trackCustom('DisqualifiedLead', { form_id: formId, score: result.score, total: result.total })
+            api.post('/meta/event', {
+              eventName: 'DisqualifiedLead',
+              pixelId: form?.settings?.metaPixelId,
+              accessToken: form?.settings?.metaAccessToken,
+              userData: {},
+              customData: { form_id: formId, score: result.score, total: result.total }
+            }).then(r => console.log('[CAPI] DisqualifiedLead sent:', r.status))
+              .catch(e => console.error('[CAPI] DisqualifiedLead error:', e.message))
+            navigate(`/form/${formId}/thank-you?qualified=false`)
+            return
+          }
         }
       } else if (phase === 'non-qualifying') {
         setPhase('contact-info')
@@ -276,7 +286,10 @@ const FormRenderer = () => {
         <div className="question-enter">
           <h3 className="text-xl font-semibold mb-1 text-green-700">You Qualify!</h3>
           <p className="text-gray-500 mb-6">
-            You scored {score.score}/{score.total}. Enter your details below and we'll connect you with a solar specialist.
+            {(form?.fields?.some(f => f.disqualifyingAnswers?.length)
+              ? `You answered ${score.good ?? score.score} qualifying vs ${score.bad ?? 0} disqualifying — you qualify!`
+              : `You scored ${score.score}/${score.total}.`
+            )} Enter your details below and we'll connect you with a solar specialist.
           </p>
           <div className="space-y-4">
             <div>

@@ -64,10 +64,12 @@ export const getProgressPercent = (current: number, total: number): number => {
 export const calculateQualifyingScore = (
   fields: FormField[],
   answers: Record<string, any>
-): { score: number; total: number; disqualified: boolean } => {
+): { score: number; total: number; good: number; bad: number; disqualified: boolean } => {
   const qualifyingFields = fields.filter(f => f.isQualifying)
-  let score = 0
-  let disqualified = false
+  let good = 0
+  let bad = 0
+  let scored = 0
+
   for (const field of qualifyingFields) {
     const userAnswer = answers[field.id]
     const correctAnswers = field.correctAnswers || []
@@ -75,39 +77,25 @@ export const calculateQualifyingScore = (
     const hasCorrect = correctAnswers.length > 0
     const hasDisqualifying = disqualifyingAnswers.length > 0
 
-    if (hasDisqualifying) {
-      if (field.type === 'checkbox') {
-        const userSelected = Array.isArray(userAnswer) ? userAnswer : []
-        const qualifyingCount = userSelected.filter((a: string) => correctAnswers.includes(a)).length
-        const disqualifyingCount = userSelected.filter((a: string) => disqualifyingAnswers.includes(a)).length
-        if (disqualifyingCount > qualifyingCount) {
-          disqualified = true
-          break
-        }
-        if (qualifyingCount > disqualifyingCount) score++
-      } else {
-        const answerStr = String(userAnswer ?? '')
-        if (disqualifyingAnswers.includes(answerStr)) {
-          disqualified = true
-          break
-        }
-        if (correctAnswers.includes(answerStr)) score++
-      }
-      continue
-    }
+    if (!hasCorrect && !hasDisqualifying) continue
+    scored++
 
-    if (!hasCorrect) continue
     if (field.type === 'checkbox') {
-      const userSelected = (Array.isArray(userAnswer) ? userAnswer : []).sort()
-      const correct = [...correctAnswers].sort()
-      if (userSelected.length === correct.length && userSelected.every((v, i) => v === correct[i])) {
-        score++
-      }
+      const userSelected = Array.isArray(userAnswer) ? userAnswer : []
+      const qualifyingCount = userSelected.filter((a: string) => correctAnswers.includes(a)).length
+      const disqualifyingCount = userSelected.filter((a: string) => disqualifyingAnswers.includes(a)).length
+      if (qualifyingCount > disqualifyingCount) good++
+      else if (disqualifyingCount > qualifyingCount) bad++
     } else {
-      if (correctAnswers.includes(String(userAnswer ?? ''))) score++
+      const answerStr = String(userAnswer ?? '')
+      const isCorrect = hasCorrect && correctAnswers.includes(answerStr)
+      const isDisqualifying = hasDisqualifying && disqualifyingAnswers.includes(answerStr)
+      if (isCorrect) good++
+      else if (isDisqualifying) bad++
     }
   }
-  return { score, total: qualifyingFields.length, disqualified }
+
+  return { score: good, total: scored, good, bad, disqualified: bad > good }
 }
 
 export const isAnswerFieldType = (type: string): boolean => {
