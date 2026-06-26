@@ -25,7 +25,7 @@ const ThankYouPage = () => {
     if (!qualified) {
       fbq.trackCustom('DisqualifiedLead', { form_id: formId })
     } else {
-      fbq.trackCustom('CompleteRegistration', { form_id: formId })
+      fbq.trackCustom('QualifiedLead', { form_id: formId })
     }
   }, [])
 
