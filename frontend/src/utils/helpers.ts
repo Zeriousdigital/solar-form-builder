@@ -65,7 +65,7 @@ export const calculateQualifyingScore = (
   fields: FormField[],
   answers: Record<string, any>
 ): { score: number; total: number; good: number; bad: number; disqualified: boolean } => {
-  const qualifyingFields = fields.filter(f => f.isQualifying)
+  const qualifyingFields = fields.filter(f => f.isQualifying || f.isDisqualifying)
   let good = 0
   let bad = 0
   let scored = 0

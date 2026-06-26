@@ -64,12 +64,12 @@ const FormRenderer = () => {
   }
 
   const qualifyingFields = useMemo(() =>
-    (form?.fields || []).filter(f => f.isQualifying),
+    (form?.fields || []).filter(f => f.isQualifying || f.isDisqualifying),
     [form?.fields]
   )
 
   const nonQualifyingFields = useMemo(() =>
-    (form?.fields || []).filter(f => !f.isQualifying),
+    (form?.fields || []).filter(f => !f.isQualifying && !f.isDisqualifying),
     [form?.fields]
   )
 
